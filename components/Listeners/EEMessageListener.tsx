@@ -4,6 +4,8 @@ import { useControlsState } from '@/states/controlsState';
 import { ETokenType, useEEApi } from '@/states/eeApiState';
 import { useLocalSessionId, useMeetingState } from '@daily-co/daily-react';
 
+import { MeetingSessionState } from '@/types/meetingSessionState';
+import { useMeetingSessionState } from '@/hooks/useMeetingSessionState';
 import { useStage } from '@/hooks/useStage';
 
 export function EEMessageListener() {
@@ -21,6 +23,8 @@ export function EEMessageListener() {
   } = useStage();
   const role = pathname.split('/').pop();
   const localSessionId = useLocalSessionId();
+  const [{ rtmps }, setSessionState] =
+    useMeetingSessionState<MeetingSessionState>();
 
   const handleControlsStateChange = useCallback(
     (state: any) => {
@@ -35,6 +39,41 @@ export function EEMessageListener() {
       });
     },
     [controlsState, setControlsState],
+  );
+
+  const handleSetupRtmp = useCallback(
+    (data: any) => {
+      if (data.action === 'remove-rtmp') {
+        setSessionState(
+          {
+            rtmps: {},
+          },
+          'shallow-merge',
+        );
+        return;
+      }
+
+      if (rtmps && Object.keys(rtmps).length > 0) {
+        return;
+      }
+
+      const uuid = crypto.randomUUID();
+      setSessionState(
+        {
+          rtmps: {
+            [uuid]: {
+              name: 'Aws RTMP',
+              platform: 'Custom',
+              streamURL: data.data.rtmpUrl,
+              streamKey: data.data.rtmpKey,
+              active: true,
+            },
+          },
+        },
+        'shallow-merge',
+      );
+    },
+    [rtmps, setSessionState],
   );
 
   useEffect(() => {
@@ -71,6 +110,10 @@ export function EEMessageListener() {
             case 'gg-controls-state-change':
               handleControlsStateChange(event.data?.data);
               break;
+            case 'set-rtmp':
+            case 'remove-rtmp':
+              handleSetupRtmp(event.data);
+              break;
           }
         }
       },
@@ -83,10 +126,15 @@ export function EEMessageListener() {
     accept,
     deny,
     handleControlsStateChange,
+    handleSetupRtmp,
   ]);
 
   useEffect(() => {
-    if (role !== 'viewer') {
+    if (!role) {
+      return;
+    }
+
+    if (!['producer', 'viewer'].includes(role)) {
       return;
     }
 
