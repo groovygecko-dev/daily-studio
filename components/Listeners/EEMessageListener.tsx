@@ -5,6 +5,7 @@ import { ETokenType, useEEApi } from '@/states/eeApiState';
 import { useLocalSessionId, useMeetingState } from '@daily-co/daily-react';
 
 import { MeetingSessionState } from '@/types/meetingSessionState';
+import { useLiveStream } from '@/hooks/useLiveStream';
 import { useMeetingSessionState } from '@/hooks/useMeetingSessionState';
 import { useStage } from '@/hooks/useStage';
 
@@ -25,6 +26,7 @@ export function EEMessageListener() {
   const localSessionId = useLocalSessionId();
   const [{ rtmps }, setSessionState] =
     useMeetingSessionState<MeetingSessionState>();
+  const { isLiveStreaming } = useLiveStream();
 
   const handleControlsStateChange = useCallback(
     (state: any) => {
@@ -160,6 +162,19 @@ export function EEMessageListener() {
       '*',
     );
   }, [role, state, isRequesting, localSessionId]);
+
+  useEffect(() => {
+    if (role !== 'producer') {
+      return;
+    }
+
+    window.parent.postMessage(
+      {
+        isLiveStreaming: isLiveStreaming,
+      },
+      '*',
+    );
+  }, [role, isLiveStreaming]);
 
   return null;
 }
