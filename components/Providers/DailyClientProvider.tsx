@@ -96,18 +96,22 @@ export function DailyClientProvider({
           url,
           token,
           strictMode: true,
-          sendSettings: {
-            video: 'quality-optimized',
-          },
+          // This is default
+          // sendSettings: {
+          //   video: role === 'producer' ? 'quality-optimized' : 'default-video',
+          // },
+          // sendSettings: {
+          //   video: 'quality-optimized',
+          // },
           dailyConfig: {
             useDevicePreferenceCookies: true,
           },
           subscribeToTracksAutomatically: false,
         });
 
-        await newCallObject.updateSendSettings({
-          video: 'quality-optimized',
-        });
+        // await newCallObject.updateSendSettings({
+        // video: 'quality-optimized',
+        // });
 
         newCallObject.on(
           'network-quality-change',
