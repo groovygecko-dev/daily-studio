@@ -31,7 +31,7 @@ export const VisibilityMenu = ({ sessionId }: { sessionId: string }) => {
             variant={isOnStage ? 'destructive' : 'default'}
             onClick={() => setStageVisibility(sessionId, !isOnStage)}
             size="auto"
-            className="mr-1.5 opacity-0 transition duration-300 group-hover:opacity-100"
+            className="opacity-0 group-hover:opacity-100 mr-1.5 transition duration-300"
           >
             {isOnStage ? (
               <Icon icon="userMinus" className="h-4 w-4" />
